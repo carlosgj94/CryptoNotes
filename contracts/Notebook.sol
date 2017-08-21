@@ -108,6 +108,7 @@ contract Notebook {
     function getNote(uint index) readOnlyAccessMod(msg.sender) constant returns (Note) {
       return notes[index];
     }
+
 }
 //The contract a single note
 contract Note {
@@ -117,6 +118,27 @@ contract Note {
 
   function Note(string t, string n, address a) {
     editNote(t, n, a);
+  }
+
+  function getTitle() constant returns (bytes32 result){
+    string memory t = title;
+    assembly {
+        result := mload(add(t, 32))
+    }
+  }
+
+  function getNote() constant returns (bytes32 result){
+    string memory n = note;
+    assembly {
+        result := mload(add(n, 32))
+    }
+  }
+
+  function getAuthor() constant returns (bytes32 result){
+    address a = author;
+    assembly {
+        result := mload(add(a, 32))
+    }
   }
 
   function editNote(string t, string n, address a) {
