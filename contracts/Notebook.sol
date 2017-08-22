@@ -3,8 +3,13 @@ pragma solidity ^0.4.4;
 
 contract Notebook {
   address owner;
+  /*struct Note {
+    string title;
+    string message;
+    address author;
+  }*/
   //Array string where the notes will be saved
-  Note[] notes;
+  string[] notes;
 
   //We map the addresses with a value if they have access
   mapping (address => bool) readOnlyAccess;
@@ -80,8 +85,9 @@ contract Notebook {
       return notes.length;
     }
 
-    function addNote(string title, string note) fullAccessMod(msg.sender) returns (bool success) {
-      notes.push(new Note(title, note, msg.sender));
+    function addNote(string title) fullAccessMod(msg.sender) returns (bool success) {
+      //notes.push(Note({title: title, message: note, author: msg.sender}));
+      notes.push(title);
       return true;
     }
 
@@ -98,18 +104,20 @@ contract Notebook {
         if(notes.length < 0) notes.length = 0;
     }
 
-    function editNote(uint index, string title, string note) fullAccessMod(msg.sender) returns (bool success) {
+    function editNote(uint index, string t) fullAccessMod(msg.sender) returns (bool success) {
       require(index >= 0 && index  < notes.length);
-      notes[index].editNote(title, note, msg.sender);
-
+      //notes[index] = Note({title: t, message: m, author: msg.sender});
+      notes[index] = t;
       return true;
     }
 
-    function getNote(uint index) readOnlyAccessMod(msg.sender) constant returns (Note) {
+    function getNoteTitle(uint index) readOnlyAccessMod(msg.sender) constant returns (string) {
       return notes[index];
     }
 
 }
+
+/*
 //The contract a single note
 contract Note {
   string title;
@@ -147,3 +155,5 @@ contract Note {
     author = a;
   }
 }
+
+*/
