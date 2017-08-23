@@ -1,3 +1,5 @@
+var editNote;
+
 App = {
   web3Provider: null,
   contracts: {},
@@ -36,16 +38,35 @@ App = {
     $(document).on('click', '.btn-delete', function (event){
       App.handleDelete(event);
     });
-    $(document).on('click', '.btn-edit', function (event){
+    $(document).on('click', '.btn-edit-modal', function (event){
       App.handleEdit(event);
     });
+    $(document).on('click', '.btn-edit', App.handleEditModal);
     $(document).on('click', '.btn-add', App.newNote);
   },
 
 //Function called when we press the edit button
   handleEdit: function(event) {
-    //TODO
-    alert("Not implemented yet");
+    editNote = parseInt($(event.target).data('id'));
+  },
+  handleEditModal : function() {
+    var _title = $('#note-title-modal').val();
+    var _message = $('#note-message-modal').val();
+    web3.eth.getAccounts(function(error, accounts) {
+      if(error) {
+        console.log(error);
+      }
+
+    var account = accounts[0];
+    App.contracts.Notebook.deployed().then(function(instance) {
+      notebooksInstance = instance;
+      return notebooksInstance.editNote(editNote, _title, _message, {from: account});
+    }).then(function (){
+      App.retriveNotes();
+    }).catch(function(err) {
+      console.log(err.message);
+    });
+  });
   },
 
 //Function called when we press the delete button
@@ -57,7 +78,6 @@ App = {
       }
 
     var account = accounts[0];
-    console.log(noteId);
     App.contracts.Notebook.deployed().then(function(instance) {
       notebooksInstance = instance;
       return notebooksInstance.deleteNote(noteId, {from: account});
@@ -101,7 +121,7 @@ App = {
           noteTemplate.find('.panel-title').text(_title);
           noteTemplate.find('.note-message').text(_message);
           noteTemplate.find('.note-author').text(_author);
-          noteTemplate.find('.btn-edit').attr('data-id', id);
+          noteTemplate.find('.btn-edit-modal').attr('data-id', id);
           noteTemplate.find('.btn-delete').attr('data-id', id);
           notesRow.append(noteTemplate.html());
         });

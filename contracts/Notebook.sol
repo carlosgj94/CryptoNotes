@@ -148,11 +148,20 @@ contract Notebook {
     function editNote(uint index, string t, string m) fullAccessMod(msg.sender) returns (bool success) {
       require(index >= 0 && index  < titles.length);
 
-      titles[index] = t;
-      messages[index] = m;
-      authors[index] = msg.sender;
+      editTitle(index, t);
+      editMessage(index, m);
+      editAuthor(index);
 
       return true;
+    }
+    function editTitle(uint index, string t) private {
+      titles[index] = t;
+    }
+    function editMessage(uint index, string m) private {
+      messages[index] = m;
+    }
+    function editAuthor(uint index) private {
+      authors[index] = msg.sender;
     }
 
     function getNoteTitle(uint index) readOnlyAccessMod(msg.sender) constant returns (string) {
