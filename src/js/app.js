@@ -1,22 +1,10 @@
+var editNote;
+
 App = {
   web3Provider: null,
   contracts: {},
 
   init: function() {
-    // Load notes.
-    /*$.getJSON('../pets.json', function(data) {
-      var notesRow = $('#notesRow');
-      var noteTemplate = $('#noteTemplate');
-
-      for (i = 0; i < data.length; i ++) {
-        noteTemplate.find('.panel-title').text(data[i].name);
-        noteTemplate.find('.note-message').text(data[i].breed);
-        noteTemplate.find('.note-author').text(data[i].age);
-
-        notesRow.append(petTemplate.html());
-      }
-    });*/
-
     return App.initWeb3();
   },
 
@@ -50,22 +38,46 @@ App = {
     $(document).on('click', '.btn-delete', function (event){
       App.handleDelete(event);
     });
+    $(document).on('click', '.btn-edit-modal', function (event){
+      App.handleEdit(event);
+    });
+    $(document).on('click', '.btn-edit', App.handleEditModal);
     $(document).on('click', '.btn-add', App.newNote);
   },
 
-  handleDelete: function(event) {
-    //event.preventDefault();
+//Function called when we press the edit button
+  handleEdit: function(event) {
+    editNote = parseInt($(event.target).data('id'));
+  },
+  handleEditModal : function() {
+    var _title = $('#note-title-modal').val();
+    var _message = $('#note-message-modal').val();
+    web3.eth.getAccounts(function(error, accounts) {
+      if(error) {
+        console.log(error);
+      }
 
+    var account = accounts[0];
+    App.contracts.Notebook.deployed().then(function(instance) {
+      notebooksInstance = instance;
+      return notebooksInstance.editNote(editNote, _title, _message, {from: account});
+    }).then(function (){
+      App.retriveNotes();
+    }).catch(function(err) {
+      console.log(err.message);
+    });
+  });
+  },
+
+//Function called when we press the delete button
+  handleDelete: function(event) {
     var noteId = parseInt($(event.target).data('id'));
     web3.eth.getAccounts(function(error, accounts) {
       if(error) {
         console.log(error);
       }
 
-    //var noteTemplate = $('#noteTemplate');
-    //var noteId = noteTemplate.find('.btn-note').data('data-id');
     var account = accounts[0];
-    console.log(noteId);
     App.contracts.Notebook.deployed().then(function(instance) {
       notebooksInstance = instance;
       return notebooksInstance.deleteNote(noteId, {from: account});
@@ -109,6 +121,7 @@ App = {
           noteTemplate.find('.panel-title').text(_title);
           noteTemplate.find('.note-message').text(_message);
           noteTemplate.find('.note-author').text(_author);
+          noteTemplate.find('.btn-edit-modal').attr('data-id', id);
           noteTemplate.find('.btn-delete').attr('data-id', id);
           notesRow.append(noteTemplate.html());
         });
@@ -118,31 +131,34 @@ App = {
 
 
   newNote: function() {
+    console.log("Hola");
+    var _title = $('#note-title').val();
+    var _message = $('#note-message').val();
+    if(_title != undefined && _message != undefined)
+      web3.eth.getAccounts(function(error, accounts) {
+        if(error) {
+          console.log(error);
+        }
 
-    web3.eth.getAccounts(function(error, accounts) {
-      if(error) {
-        console.log(error);
-      }
-
-      var account = accounts[0];
-      console.log("Balance: "+web3.eth.getBalance(account).c);
-      App.contracts.Notebook.deployed().then(function(instance) {
-        notebooksInstance = instance;
-        return notebooksInstance.addTitle("on6", {from: account});
-      }).then(function (_title){
-        console.log(_title);
-        return notebooksInstance.addMessage("on6", {from: account});
-      }).then(function (_message){
-        console.log(_message);
-        return notebooksInstance.addAuthor({from: account});
-      }).then(function (_author){
-        console.log(_author);
+        var account = accounts[0];
         console.log("Balance: "+web3.eth.getBalance(account).c);
-        return App.retriveNotes();
-      }).catch(function(err) {
-        console.log(err.message);
+        App.contracts.Notebook.deployed().then(function(instance) {
+          notebooksInstance = instance;
+          return notebooksInstance.addTitle(_title, {from: account});
+        }).then(function (_title){
+          console.log(_title);
+          return notebooksInstance.addMessage(_message, {from: account});
+        }).then(function (_message){
+          console.log(_message);
+          return notebooksInstance.addAuthor({from: account});
+        }).then(function (_author){
+          console.log(_author);
+          console.log("Balance: "+web3.eth.getBalance(account).c);
+          return App.retriveNotes();
+        }).catch(function(err) {
+          console.log(err.message);
+        });
       });
-    });
 
   }
 

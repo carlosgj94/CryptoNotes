@@ -112,7 +112,7 @@ contract Notebook {
       for(uint i = index; i < titles.length-1 ; i++){
         titles[i] = titles[i+1];
       }
-        delete titles[titles.length-1];
+        delete titles[titles.length];
         titles.length--;
 
         if(titles.length < 0) {
@@ -121,17 +121,17 @@ contract Notebook {
     }
     function deleteMessage(uint index) private {
       for(uint i = index; i < messages.length-1 ; i++){
-        //messages[i] = messages[i+1];
+        messages[i] = messages[i+1];
       }
         delete messages[messages.length-1];
         messages.length--;
 
-        if(titles.length < 0) {
+        if(messages.length < 0) {
           messages.length = 0;
         }
     }
     function deleteAuthor(uint index) private {
-      for(uint i = index; i < titles.length-1 ; i++){
+      for(uint i = authors; i < authors.length-1 ; i++){
         authors[i] = authors[i+1];
       }
 
@@ -139,7 +139,7 @@ contract Notebook {
         delete authors[authors.length-1];
         authors.length--;
 
-        if(titles.length < 0) {
+        if(authors.length < 0) {
           authors.length = 0;
         }
     }
@@ -148,11 +148,20 @@ contract Notebook {
     function editNote(uint index, string t, string m) fullAccessMod(msg.sender) returns (bool success) {
       require(index >= 0 && index  < titles.length);
 
-      titles[index] = t;
-      messages[index] = m;
-      authors[index] = msg.sender;
+      editTitle(index, t);
+      editMessage(index, m);
+      editAuthor(index);
 
       return true;
+    }
+    function editTitle(uint index, string t) private {
+      titles[index] = t;
+    }
+    function editMessage(uint index, string m) private {
+      messages[index] = m;
+    }
+    function editAuthor(uint index) private {
+      authors[index] = msg.sender;
     }
 
     function getNoteTitle(uint index) readOnlyAccessMod(msg.sender) constant returns (string) {
@@ -171,44 +180,3 @@ contract Notebook {
     }
 
 }
-
-/*
-//The contract a single note
-contract Note {
-  string title;
-  string note;
-  address author;
-
-  function Note(string t, string n, address a) {
-    editNote(t, n, a);
-  }
-
-  function getTitle() constant returns (bytes32 result){
-    string memory t = title;
-    assembly {
-        result := mload(add(t, 32))
-    }
-  }
-
-  function getNote() constant returns (bytes32 result){
-    string memory n = note;
-    assembly {
-        result := mload(add(n, 32))
-    }
-  }
-
-  function getAuthor() constant returns (bytes32 result){
-    address a = author;
-    assembly {
-        result := mload(add(a, 32))
-    }
-  }
-
-  function editNote(string t, string n, address a) {
-    title = t;
-    note = n;
-    author = a;
-  }
-}
-
-*/
