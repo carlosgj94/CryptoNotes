@@ -1,7 +1,4 @@
-# CryptoNotes
-
-
-<img src="http://www.emoji.co.uk/files/emoji-one/objects-emoji-one/1977-spiral-note-pad.png" width="200" height="200" />
+# CryptoNotes <img src="http://www.emoji.co.uk/files/emoji-one/objects-emoji-one/1977-spiral-note-pad.png" width="200" height="200" />
 
 **Ethereum DAPP** done with truffle to create notes, erase them and edit them. 
  This example may help in the design of your future DApp.
