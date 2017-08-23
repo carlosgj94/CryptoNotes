@@ -3,60 +3,147 @@ App = {
   contracts: {},
 
   init: function() {
-    // Load pets.
-    $.getJSON('../pets.json', function(data) {
-      var petsRow = $('#petsRow');
-      var petTemplate = $('#petTemplate');
+    // Load notes.
+    /*$.getJSON('../pets.json', function(data) {
+      var notesRow = $('#notesRow');
+      var noteTemplate = $('#noteTemplate');
 
       for (i = 0; i < data.length; i ++) {
-        petTemplate.find('.panel-title').text(data[i].name);
-        petTemplate.find('img').attr('src', data[i].picture);
-        petTemplate.find('.pet-breed').text(data[i].breed);
-        petTemplate.find('.pet-age').text(data[i].age);
-        petTemplate.find('.pet-location').text(data[i].location);
-        petTemplate.find('.btn-adopt').attr('data-id', data[i].id);
+        noteTemplate.find('.panel-title').text(data[i].name);
+        noteTemplate.find('.note-message').text(data[i].breed);
+        noteTemplate.find('.note-author').text(data[i].age);
 
-        petsRow.append(petTemplate.html());
+        notesRow.append(petTemplate.html());
       }
-    });
+    });*/
 
     return App.initWeb3();
   },
 
   initWeb3: function() {
-    /*
-     * Replace me...
-     */
+    // Initialize web3 and set the provider to the testRPC.
+    if (typeof web3 !== 'undefined') {
+      App.web3Provider = web3.currentProvider;
+      web3 = new Web3(web3.currentProvider);
+    } else {
+      // set the provider you want from Web3.providers
+      App.web3Provider = new Web3.providers.HttpProvider('http://localhost:8545');
+      web3 = new Web3(App.web3Provider);
+    }
 
     return App.initContract();
   },
 
   initContract: function() {
-    /*
-     * Replace me...
-     */
+    $.getJSON('Notebook.json', function(data) {
+      var NotebookArtifact = data;
+      App.contracts.Notebook = TruffleContract(NotebookArtifact);
 
+      // Set the provider for our contract.
+      App.contracts.Notebook.setProvider(App.web3Provider);
+      return App.retriveNotes();
+    });
     return App.bindEvents();
   },
 
   bindEvents: function() {
-    $(document).on('click', '.btn-adopt', App.handleAdopt);
+    $(document).on('click', '.btn-delete', function (event){
+      App.handleDelete(event);
+    });
+    $(document).on('click', '.btn-add', App.newNote);
   },
 
-  handleAdopt: function() {
-    event.preventDefault();
+  handleDelete: function(event) {
+    //event.preventDefault();
 
-    var petId = parseInt($(event.target).data('id'));
+    var noteId = parseInt($(event.target).data('id'));
+    web3.eth.getAccounts(function(error, accounts) {
+      if(error) {
+        console.log(error);
+      }
 
-    /*
-     * Replace me...
-     */
+    //var noteTemplate = $('#noteTemplate');
+    //var noteId = noteTemplate.find('.btn-note').data('data-id');
+    var account = accounts[0];
+    console.log(noteId);
+    App.contracts.Notebook.deployed().then(function(instance) {
+      notebooksInstance = instance;
+      return notebooksInstance.deleteNote(noteId, {from: account});
+    }).then(function (){
+      App.retriveNotes();
+    }).catch(function(err) {
+      console.log(err.message);
+    });
+  });
+},
+
+  retriveNotes: function() {
+    var notebooksInstance;
+
+    App.contracts.Notebook.deployed().then(function(instance) {
+      notebooksInstance = instance;
+      return notebooksInstance.getNumberOfNotes();
+    }).then(function (notesNumber){
+      notesNumber = notesNumber.c[0];
+      if(notesNumber==0)
+        $('#notesRow').empty();
+      else
+        for(var i=0; i<notesNumber; i++)
+          App.printNote(notebooksInstance.getNoteTitle(i),
+          notebooksInstance.getNoteMessage(i),
+          notebooksInstance.getNoteAuthor(i),
+          i);
+    });
+
   },
 
-  markAdopted: function(adopters, account) {
-    /*
-     * Replace me...
-     */
+  printNote: function(title, message, author, id) {
+    var notesRow = $('#notesRow');
+    var noteTemplate = $('#noteTemplate');
+
+    notesRow.empty();
+
+    title.then(function (_title) {
+      message.then(function (_message) {
+        author.then(function (_author) {
+          noteTemplate.find('.panel-title').text(_title);
+          noteTemplate.find('.note-message').text(_message);
+          noteTemplate.find('.note-author').text(_author);
+          noteTemplate.find('.btn-delete').attr('data-id', id);
+          notesRow.append(noteTemplate.html());
+        });
+      });
+    });
+  },
+
+
+  newNote: function() {
+
+    web3.eth.getAccounts(function(error, accounts) {
+      if(error) {
+        console.log(error);
+      }
+
+      var account = accounts[0];
+      console.log("Balance: "+web3.eth.getBalance(account).c);
+      App.contracts.Notebook.deployed().then(function(instance) {
+        notebooksInstance = instance;
+        return notebooksInstance.addTitle("on6", {from: account});
+      }).then(function (_title){
+        console.log(_title);
+        return notebooksInstance.addMessage("on6", {from: account});
+      }).then(function (_message){
+        console.log(_message);
+        return notebooksInstance.addAuthor({from: account});
+      }).then(function (_author){
+        console.log(_author);
+        console.log("Balance: "+web3.eth.getBalance(account).c);
+        return App.retriveNotes();
+      }).catch(function(err) {
+        console.log(err.message);
+      });
+    });
+
   }
 
 };

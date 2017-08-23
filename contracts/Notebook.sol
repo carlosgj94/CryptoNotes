@@ -3,8 +3,11 @@ pragma solidity ^0.4.4;
 
 contract Notebook {
   address owner;
+
   //Array string where the notes will be saved
-  Note[] notes;
+  string[] titles;
+  string[] messages;
+  address[] authors;
 
   //We map the addresses with a value if they have access
   mapping (address => bool) readOnlyAccess;
@@ -77,39 +80,99 @@ contract Notebook {
 
     //CRUD operations with notes
     function getNumberOfNotes() readOnlyAccessMod(msg.sender) constant returns (uint) {
-      return notes.length;
+      return titles.length;
     }
 
-    function addNote(string title, string note) fullAccessMod(msg.sender) returns (bool success) {
-      notes.push(new Note(title, note, msg.sender));
+    function addTitle(string t) fullAccessMod(msg.sender) returns (bool success) {
+      titles.length++;
+      titles[titles.length-1] = t;
+      return true;
+    }
+    function addMessage(string m) fullAccessMod(msg.sender) returns (bool success) {
+      messages.length++;
+      messages[messages.length-1] = m;
+      return true;
+    }
+    function addAuthor() fullAccessMod(msg.sender) returns (bool success) {
+      authors.length++;
+      authors[messages.length-1] = msg.sender;
       return true;
     }
 
     function deleteNote(uint index) fullAccessMod(msg.sender) returns(bool success) {
-      require(index >= 0 && index  < notes.length);
+      require(index >= 0 && index  < titles.length);
 
-      for(uint i = index; i < notes.length-1 ; i++)
-        notes[i] = notes[i+1];
+      deleteTitle(index);
+      deleteMessage(index);
+      deleteAuthor(index);
 
-        delete notes[notes.length-1];
-        notes.length--;
-        return true;
+      return true;
+    }
+    function deleteTitle(uint index) private {
+      for(uint i = index; i < titles.length-1 ; i++){
+        titles[i] = titles[i+1];
+      }
+        delete titles[titles.length-1];
+        titles.length--;
 
-        if(notes.length < 0) notes.length = 0;
+        if(titles.length < 0) {
+          titles.length = 0;
+        }
+    }
+    function deleteMessage(uint index) private {
+      for(uint i = index; i < messages.length-1 ; i++){
+        //messages[i] = messages[i+1];
+      }
+        delete messages[messages.length-1];
+        messages.length--;
+
+        if(titles.length < 0) {
+          messages.length = 0;
+        }
+    }
+    function deleteAuthor(uint index) private {
+      for(uint i = index; i < titles.length-1 ; i++){
+        authors[i] = authors[i+1];
+      }
+
+
+        delete authors[authors.length-1];
+        authors.length--;
+
+        if(titles.length < 0) {
+          authors.length = 0;
+        }
     }
 
-    function editNote(uint index, string title, string note) fullAccessMod(msg.sender) returns (bool success) {
-      require(index >= 0 && index  < notes.length);
-      notes[index].editNote(title, note, msg.sender);
+
+    function editNote(uint index, string t, string m) fullAccessMod(msg.sender) returns (bool success) {
+      require(index >= 0 && index  < titles.length);
+
+      titles[index] = t;
+      messages[index] = m;
+      authors[index] = msg.sender;
 
       return true;
     }
 
-    function getNote(uint index) readOnlyAccessMod(msg.sender) constant returns (Note) {
-      return notes[index];
+    function getNoteTitle(uint index) readOnlyAccessMod(msg.sender) constant returns (string) {
+      require(index >= 0 && index  < titles.length);
+
+      return titles[index];
+    }
+    function getNoteMessage(uint index) readOnlyAccessMod(msg.sender) constant returns (string) {
+      require(index >= 0 && index  < titles.length);
+
+      return messages[index];
+    }
+    function getNoteAuthor(uint index) readOnlyAccessMod(msg.sender) constant returns (address) {
+      require(index >= 0 && index  < titles.length);
+      return authors[index];
     }
 
 }
+
+/*
 //The contract a single note
 contract Note {
   string title;
@@ -147,3 +210,5 @@ contract Note {
     author = a;
   }
 }
+
+*/
