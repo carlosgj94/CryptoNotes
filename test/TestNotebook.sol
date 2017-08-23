@@ -16,15 +16,17 @@ contract TestNotebook {
   }
 
   function testCreateNote() {
-    notebook.addNote("Hola", "Hello");
+    notebook.addTitle("Hola");
+    notebook.addMessage("Hola");
+    notebook.addAuthor();
 
-    bytes32 title = notebook.getNote(0).getTitle();
+    string title = notebook.getNoteTitle(0);
     Assert.equal(title, "Hola", "First note incorrect.");
   }
 
   function testEditNote() {
     notebook.editNote(0, "Ahoj", "Hello");
-    bytes32 title = notebook.getNote(0).getTitle();
+    string title = notebook.getNoteTitle(0);
     Assert.equal(title, "Ahoj", "First note incorrect.");
   }
 
