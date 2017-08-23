@@ -102,26 +102,48 @@ contract Notebook {
     function deleteNote(uint index) fullAccessMod(msg.sender) returns(bool success) {
       require(index >= 0 && index  < titles.length);
 
+      deleteTitle(index);
+      deleteMessage(index);
+      deleteAuthor(index);
+
+      return true;
+    }
+    function deleteTitle(uint index) private {
       for(uint i = index; i < titles.length-1 ; i++){
         titles[i] = titles[i+1];
-        messages[i] = messages[i+1];
-        authors[i] = authors[i+1];
       }
-
         delete titles[titles.length-1];
         titles.length--;
-        delete messages[messages.length-1];
-        messages.length--;
-        delete authors[authors.length-1];
-        authors.length--;
-        return true;
 
         if(titles.length < 0) {
           titles.length = 0;
+        }
+    }
+    function deleteMessage(uint index) private {
+      for(uint i = index; i < messages.length-1 ; i++){
+        //messages[i] = messages[i+1];
+      }
+        delete messages[messages.length-1];
+        messages.length--;
+
+        if(titles.length < 0) {
           messages.length = 0;
+        }
+    }
+    function deleteAuthor(uint index) private {
+      for(uint i = index; i < titles.length-1 ; i++){
+        authors[i] = authors[i+1];
+      }
+
+
+        delete authors[authors.length-1];
+        authors.length--;
+
+        if(titles.length < 0) {
           authors.length = 0;
         }
     }
+
 
     function editNote(uint index, string t, string m) fullAccessMod(msg.sender) returns (bool success) {
       require(index >= 0 && index  < titles.length);
